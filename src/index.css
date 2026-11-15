@@ -1,0 +1,97 @@
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/fraunces';
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Design tokens: warm "parchment" surfaces, deep indigo primary, gold for completion. */
+:root {
+  --background: #faf6ee;
+  --foreground: #1f2140;
+  --card: #fffdf8;
+  --card-foreground: #1f2140;
+  --primary: #2e3270;
+  --primary-foreground: #faf6ee;
+  --accent: #c8962e;
+  --accent-foreground: #1f2140;
+  --muted: #efe8da;
+  --muted-foreground: #66657a;
+  --border: #e4dccb;
+  --ring: #5960c2;
+  --destructive: #b4232c;
+  --destructive-foreground: #ffffff;
+  --success: #2f7d5b;
+}
+
+.dark {
+  --background: #12132a;
+  --foreground: #ede8dc;
+  --card: #1b1d3a;
+  --card-foreground: #ede8dc;
+  --primary: #aeb4ff;
+  --primary-foreground: #12132a;
+  --accent: #e0b04d;
+  --accent-foreground: #12132a;
+  --muted: #25284a;
+  --muted-foreground: #a3a2b8;
+  --border: #2f3257;
+  --ring: #aeb4ff;
+  --destructive: #f26b73;
+  --destructive-foreground: #12132a;
+  --success: #6fcf9f;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --font-sans: 'Inter Variable', 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', system-ui, sans-serif;
+  --font-serif: 'Fraunces Variable', 'Noto Serif TC', 'Songti TC', Georgia, serif;
+  --radius-lg: 0.875rem;
+  --radius-md: 0.625rem;
+  --radius-sm: 0.375rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-serif tracking-tight;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
