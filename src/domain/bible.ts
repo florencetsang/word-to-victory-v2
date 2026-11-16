@@ -96,6 +96,44 @@ export const BOOKS: readonly Book[] = [
 
 export const BOOKS_BY_CODE: ReadonlyMap<string, Book> = new Map(BOOKS.map((b) => [b.code, b]))
 
+export type CategoryKey =
+  | 'law'
+  | 'history'
+  | 'wisdom'
+  | 'majorProphets'
+  | 'minorProphets'
+  | 'gospels'
+  | 'churchHistory'
+  | 'paulsLetters'
+  | 'generalLetters'
+  | 'prophecy'
+
+export interface Category {
+  key: CategoryKey
+  /** Book codes in canonical order. */
+  books: readonly string[]
+}
+
+const CATEGORY_RANGES: [key: CategoryKey, first: string, last: string][] = [
+  ['law', 'GEN', 'DEU'],
+  ['history', 'JOS', 'EST'],
+  ['wisdom', 'JOB', 'SNG'],
+  ['majorProphets', 'ISA', 'DAN'],
+  ['minorProphets', 'HOS', 'MAL'],
+  ['gospels', 'MAT', 'JHN'],
+  ['churchHistory', 'ACT', 'ACT'],
+  ['paulsLetters', 'ROM', 'PHM'],
+  ['generalLetters', 'HEB', 'JUD'],
+  ['prophecy', 'REV', 'REV'],
+]
+
+/** Traditional groupings of the 66 books, in canonical order. Each book belongs to exactly one category. */
+export const CATEGORIES: readonly Category[] = CATEGORY_RANGES.map(([key, first, last]) => {
+  const from = BOOKS_BY_CODE.get(first)!.ordinal
+  const to = BOOKS_BY_CODE.get(last)!.ordinal
+  return { key, books: BOOKS.filter((b) => b.ordinal >= from && b.ordinal <= to).map((b) => b.code) }
+})
+
 export const chaptersIn = (testament?: Testament) =>
   BOOKS.filter((b) => !testament || b.testament === testament).reduce((s, b) => s + b.chapters, 0)
 
