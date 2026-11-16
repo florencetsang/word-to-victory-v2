@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(35);
+select plan(39);
 
 -- Fixtures -------------------------------------------------------------------------------------
 create function pg_temp.login(u uuid) returns void language sql as $$
@@ -41,6 +41,9 @@ select pg_temp.login('00000000-0000-0000-0000-00000000000b');
 select is((select count(*)::int from chapter_reads), 0, 'bob cannot read alice progress');
 select is((select count(*)::int from profiles), 1, 'bob sees only himself');
 select throws_ok($$ select reset_record(alice_rec) from ids $$, '42501', null, 'bob cannot reset alice');
+select lives_ok($$ update profiles set theme = 'light', locale = 'en' where id = '00000000-0000-0000-0000-00000000000b' $$, 'update own settings');
+select is((select theme from profiles where id = '00000000-0000-0000-0000-00000000000b'), 'light', 'settings saved');
+select throws_ok($$ update profiles set id = gen_random_uuid() where id = '00000000-0000-0000-0000-00000000000b' $$, '42501', null, 'protected profile column');
 
 -- Sharing --------------------------------------------------------------------------------------
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
@@ -88,6 +91,7 @@ select is((select chapters_read from group_progress((select shared_id from g)) w
 select throws_ok($$ select regenerate_invite((select shared_id from g)) $$, '42501', null, 'member cannot regenerate');
 
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
+select lives_ok($$ update groups set name = 'Renamed' where id = (select shared_id from g) $$, 'owner renames group');
 select lives_ok($$ select remove_member((select shared_id from g), '00000000-0000-0000-0000-00000000000c') $$, 'owner removes member');
 
 select * from finish();
