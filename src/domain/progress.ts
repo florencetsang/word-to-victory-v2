@@ -1,4 +1,4 @@
-import { BOOKS, chapterKey, chaptersIn, TOTAL_CHAPTERS, type Testament } from './bible'
+import { BOOKS, CATEGORIES, chapterKey, chaptersIn, TOTAL_CHAPTERS, type CategoryKey, type Testament } from './bible'
 
 export interface ReadEntry {
   code: string
@@ -32,6 +32,7 @@ export function bookProgress(reads: ReadMap, code: string, chapters: number): Pr
 export interface ProgressSummary {
   overall: Progress
   testament: Record<Testament, Progress>
+  categories: Record<CategoryKey, Progress>
   books: Record<string, Progress>
   booksCompleted: number
 }
@@ -46,9 +47,21 @@ export function summarize(reads: ReadMap): ProgressSummary {
     tCount[b.testament] += p.read
     if (p.read === p.total) booksCompleted++
   }
+  const categories = Object.fromEntries(
+    CATEGORIES.map((c) => {
+      let read = 0
+      let total = 0
+      for (const code of c.books) {
+        read += books[code].read
+        total += books[code].total
+      }
+      return [c.key, progress(read, total)]
+    }),
+  ) as Record<CategoryKey, Progress>
   return {
     overall: progress(tCount.OT + tCount.NT, TOTAL_CHAPTERS),
     testament: { OT: progress(tCount.OT, chaptersIn('OT')), NT: progress(tCount.NT, chaptersIn('NT')) },
+    categories,
     books,
     booksCompleted,
   }

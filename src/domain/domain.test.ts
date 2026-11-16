@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { BOOKS, bookName, chapterKey, TOTAL_CHAPTERS, chaptersIn, isValidChapter } from './bible'
+import { BOOKS, bookName, CATEGORIES, chapterKey, TOTAL_CHAPTERS, chaptersIn, isValidChapter } from './bible'
 import { bibleComLink } from './bible-versions'
 import { clearLegacyProgress, readLegacyProgress } from './legacy'
 import { summarize, type ReadEntry } from './progress'
@@ -79,6 +79,14 @@ describe('progress', () => {
     expect(s.testament.NT.read).toBe(1)
     expect(s.books.RUT.percent).toBe(100)
     expect(s.booksCompleted).toBe(1)
+    expect(s.categories.history).toMatchObject({ read: 4, total: 249 })
+    expect(s.categories.gospels.read).toBe(1)
+    expect(s.categories.law.read).toBe(0)
+  })
+
+  it('assigns every book to exactly one category in canonical order', () => {
+    expect(CATEGORIES.flatMap((c) => c.books)).toEqual(BOOKS.map((b) => b.code))
+    expect(CATEGORIES.find((c) => c.key === 'generalLetters')?.books[0]).toBe('HEB')
   })
 })
 

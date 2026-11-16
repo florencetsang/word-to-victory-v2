@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ProgressRing } from '@/components/ProgressRing'
 import { Card, CardContent, CardHeader, CardTitle, ProgressBar, Skeleton } from '@/components/ui/primitives'
-import { BOOKS, bookName } from '@/domain/bible'
+import { BOOKS, bookName, CATEGORIES } from '@/domain/bible'
 import { addDays, today as getToday } from '@/domain/dates'
 import { summarize, type ReadMap } from '@/domain/progress'
 import { computeStreaks } from '@/domain/streaks'
@@ -84,6 +84,28 @@ export function StatsView({ reads, activity }: { reads: ReadMap; activity?: Read
         </CardHeader>
         <CardContent>
           {activity ? <Heatmap activity={activity} today={today} /> : <Skeleton className="h-28" />}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('stats.byCategory')}</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+          {CATEGORIES.map(({ key }) => {
+            const p = s.categories[key]
+            return (
+              <div key={key} className="space-y-1.5">
+                <div className="flex justify-between gap-3 text-sm">
+                  <span className="truncate font-medium">{t(`stats.categories.${key}`)}</span>
+                  <span className="shrink-0 tabular-nums text-muted-foreground">
+                    {p.read}/{p.total} · {p.percent.toFixed(1)}%
+                  </span>
+                </div>
+                <ProgressBar value={p.percent} tone={p.percent === 100 ? 'accent' : 'primary'} />
+              </div>
+            )
+          })}
         </CardContent>
       </Card>
 
