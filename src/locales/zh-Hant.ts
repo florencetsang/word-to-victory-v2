@@ -12,6 +12,14 @@ const zhHant = {
   },
   nav: { main: '主選單', today: '今天', bible: '聖經', stats: '統計', groups: '小組', settings: '個人' },
   login: {
+    codeLabel: '或輸入電郵中的驗證碼',
+    codeHint: '如連結在其他瀏覽器或應用程式中開啟，請使用驗證碼。',
+    verify: '登入',
+    errorCode: '驗證碼不正確或已過期。請查看最新的電郵或重新寄送。',
+    errorOtherBrowser:
+      '此連結在另一個瀏覽器或應用程式中開啟，與你要求登入的瀏覽器不同。請重新寄送電郵並在此輸入驗證碼，或在此瀏覽器開啟連結。',
+    errorExpired: '登入連結已過期或已被使用。請在下方重新寄送。',
+    errorGeneric: '登入失敗，請重新寄送電郵再試。',
     title: '得勝之道',
     tagline: '一章一章，一起讀完整本聖經。',
     subtitle: '登入以在不同裝置同步你的進度。',

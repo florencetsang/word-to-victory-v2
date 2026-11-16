@@ -4,6 +4,8 @@ export default defineConfig({
   testDir: 'e2e',
   fullyParallel: true,
   retries: process.env.CI ? 1 : 0,
+  expect: { timeout: 15_000 },
+  timeout: 60_000,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: { baseURL: 'http://localhost:5173', trace: 'retain-on-failure' },
   projects: [

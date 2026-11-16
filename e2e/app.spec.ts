@@ -1,9 +1,28 @@
 import { expect, test } from '@playwright/test'
-import { signIn, uniqueEmail } from './helpers'
+import { emailCode, magicLink, requestEmail, signIn, uniqueEmail } from './helpers'
 
 test('redirects anonymous users to login', async ({ page }) => {
   await page.goto('/stats')
   await expect(page).toHaveURL(/\/login\?redirect=%2Fstats/)
+})
+
+test('signs in with the code from the email', async ({ page }) => {
+  const email = uniqueEmail('code')
+  await requestEmail(page, email, '/stats')
+  await page.getByLabel('Or enter the code from the email').fill(await emailCode(email))
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+  await expect(page).toHaveURL(/\/stats$/)
+})
+
+test('explains when the link is opened in another browser', async ({ page, browser }) => {
+  const email = uniqueEmail('otherbrowser')
+  await requestEmail(page, email)
+  const other = await browser.newContext()
+  const p2 = await other.newPage()
+  await p2.goto(await magicLink(email))
+  await expect(p2.getByRole('alert')).toContainText('different browser')
+  await expect(p2).toHaveURL(/\/login/)
+  await other.close()
 })
 
 test('marks chapters and syncs progress across reloads', async ({ page }) => {
@@ -11,8 +30,10 @@ test('marks chapters and syncs progress across reloads', async ({ page }) => {
   await page.getByPlaceholder('Search books').fill('Jude')
   const ch1 = page.getByRole('button', { name: /^Jude 1 ·/ })
   await expect(ch1).toHaveAttribute('aria-pressed', 'false')
+  const saved = page.waitForResponse((r) => r.url().includes('/rest/v1/chapter_reads') && r.ok())
   await ch1.click()
   await expect(ch1).toHaveAttribute('aria-pressed', 'true')
+  await saved
 
   await page.reload()
   await page.getByPlaceholder('Search books').fill('Jude')

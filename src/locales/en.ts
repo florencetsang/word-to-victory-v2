@@ -18,6 +18,14 @@ const en = {
     settings: 'Profile',
   },
   login: {
+    codeLabel: 'Or enter the code from the email',
+    codeHint: 'Use the code if the link opens in a different browser or app.',
+    verify: 'Sign in',
+    errorCode: 'That code is incorrect or has expired. Check the latest email or request a new one.',
+    errorOtherBrowser:
+      'That link was opened in a different browser or app from the one you signed in with. Request a new email and enter its code here, or open the link in this browser.',
+    errorExpired: 'That sign-in link has expired or was already used. Request a new one below.',
+    errorGeneric: 'Sign-in failed. Please request a new email and try again.',
     title: 'Word to Victory',
     tagline: 'Read the whole Bible — chapter by chapter, together.',
     subtitle: 'Sign in to sync your progress across devices.',

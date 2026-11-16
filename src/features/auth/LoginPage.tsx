@@ -1,5 +1,5 @@
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { Mail } from 'lucide-react'
+import { KeyRound, Mail } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Logo } from '@/components/common'
@@ -28,13 +28,31 @@ const AppleIcon = () => (
   </svg>
 )
 
+/** Removes auth callback params so they aren't replayed after sign-in. */
+function cleanRedirect(raw: string | undefined) {
+  if (!raw || !/^\/(?![/\\])/.test(raw)) return '/'
+  const url = new URL(raw, window.location.origin)
+  for (const k of ['code', 'error', 'error_code', 'error_description']) url.searchParams.delete(k)
+  return url.pathname + url.search
+}
+
+/** Turns a failed magic-link callback into a user-facing message key. */
+function callbackErrorKey(err: { name?: string; message?: string; code?: string } | null): string | null {
+  if (!err) return null
+  const text = `${err.name ?? ''} ${err.code ?? ''} ${err.message ?? ''}`.toLowerCase()
+  if (text.includes('verifier')) return 'login.errorOtherBrowser'
+  if (text.includes('expired') || text.includes('invalid')) return 'login.errorExpired'
+  return 'login.errorGeneric'
+}
+
 export function LoginPage() {
   const { t } = useTranslation()
   const { session } = useAuth()
   const navigate = useNavigate()
   const search = useSearch({ strict: false }) as { redirect?: string }
-  const redirect = search.redirect && /^\/(?![/\\])/.test(search.redirect) ? search.redirect : '/'
+  const redirect = cleanRedirect(search.redirect)
   const [email, setEmail] = useState('')
+  const [code, setCode] = useState('')
   const [sent, setSent] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -42,6 +60,22 @@ export function LoginPage() {
   useEffect(() => {
     if (session) void navigate({ to: redirect, replace: true })
   }, [session, navigate, redirect])
+
+  // Surface failures from a magic-link callback instead of silently showing the form again.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.hash.slice(1) || window.location.search)
+    const nested = search.redirect ? new URL(search.redirect, window.location.origin).searchParams : null
+    const urlError = params.get('error_code') ?? nested?.get('error_code')
+    if (urlError) return setError(t(callbackErrorKey({ code: urlError })!))
+    const hadCode = Boolean(params.get('code') || nested?.get('code'))
+    void supabase.auth.initialize().then(({ error }) => {
+      // supabase-js ignores a callback code when this browser has no PKCE verifier, i.e. the link
+      // was opened in a different browser or an email app's built-in viewer.
+      const key = callbackErrorKey(error) ?? (hadCode ? 'login.errorOtherBrowser' : null)
+      if (key) setError(t(key))
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const redirectTo = `${window.location.origin}${redirect}`
 
@@ -53,6 +87,15 @@ export function LoginPage() {
     setBusy(false)
     if (error) setError(errorMessage(error))
     else setSent(true)
+  }
+
+  const verifyCode = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setBusy(true)
+    setError(null)
+    const { error } = await supabase.auth.verifyOtp({ email, token: code.trim(), type: 'email' })
+    setBusy(false)
+    if (error) setError(t('login.errorCode'))
   }
 
   const oauth = async (provider: 'google' | 'apple') => {
@@ -83,11 +126,41 @@ export function LoginPage() {
           <Card>
             <CardContent className="space-y-4 pt-5">
               {sent ? (
-                <div role="status" className="space-y-2 text-center">
+                <div role="status" className="space-y-4 text-center">
                   <Mail className="mx-auto size-10 text-primary" />
-                  <p className="font-medium">{t('login.checkEmail')}</p>
-                  <p className="text-sm text-muted-foreground">{t('login.sentTo', { email })}</p>
-                  <Button variant="link" onClick={() => setSent(false)}>
+                  <div className="space-y-1">
+                    <p className="font-medium">{t('login.checkEmail')}</p>
+                    <p className="text-sm text-muted-foreground">{t('login.sentTo', { email })}</p>
+                  </div>
+                  <form onSubmit={verifyCode} className="space-y-2 text-left">
+                    <Label htmlFor="otp">{t('login.codeLabel')}</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="otp"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        pattern="[0-9]{6,10}"
+                        maxLength={10}
+                        placeholder="123456"
+                        required
+                        value={code}
+                        onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                        className="font-mono tracking-widest"
+                      />
+                      <Button type="submit" disabled={busy || code.length < 6}>
+                        <KeyRound /> {t('login.verify')}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t('login.codeHint')}</p>
+                  </form>
+                  <Button
+                    variant="link"
+                    onClick={() => {
+                      setSent(false)
+                      setCode('')
+                      setError(null)
+                    }}
+                  >
                     {t('login.useDifferentEmail')}
                   </Button>
                 </div>

@@ -65,7 +65,9 @@ Magic-link emails are captured by Mailpit at http://127.0.0.1:54324.
 4. Optional OAuth providers (**Authentication → Providers**):
    - **Google**: create an OAuth client in Google Cloud and use the Supabase callback URL `https://<project>.supabase.co/auth/v1/callback`.
    - **Apple**: create a Services ID and key in the Apple Developer portal, using the same callback URL.
-5. For automated migrations, add the repository secrets `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` and `SUPABASE_PROJECT_ID`. The **Deploy database** workflow then runs `supabase db push` whenever migrations change on `main`.
+   - The buttons only appear when the provider is listed in `VITE_AUTH_PROVIDERS` (see Vercel below).
+5. In **Authentication → Email Templates**, paste `supabase/templates/magic_link.html` into **Magic Link** and `supabase/templates/confirmation.html` into **Confirm signup**. These include the 6-digit code (`{{ .Token }}`), so people can still sign in when the link opens in another browser or in an email app's built-in viewer.
+6. For automated migrations, add the repository secrets `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` and `SUPABASE_PROJECT_ID`. The **Deploy database** workflow then runs `supabase db push` whenever migrations change on `main`.
 
 ### 2. Vercel
 
@@ -76,6 +78,8 @@ Import the repository into Vercel; `vercel.json` already configures the Vite bui
 | `VITE_SUPABASE_URL`             | `https://<project>.supabase.co`                              |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | The publishable (anon) key from **Project Settings → API**   |
 | `VITE_AUTH_PROVIDERS`           | `google,apple` (comma-separated; leave empty for email only) |
+
+These values are compiled in at build time, so redeploy after changing them.
 
 ## Project layout
 
