@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { usePersonalRecordId, useUserId } from '@/features/auth/auth'
 import { toReadMap } from '@/features/tracker/api'
+import { publicOrigin } from '@/lib/platform'
 import { supabase } from '@/lib/supabase'
 import { errorMessage } from '@/lib/utils'
 
@@ -72,7 +73,7 @@ export function useSharedWithMe() {
   })
 }
 
-export const publicShareUrl = (token: string) => `${window.location.origin}/s/${token}`
+export const publicShareUrl = (token: string) => `${publicOrigin()}/s/${token}`
 
 export function usePublicRecord(token: string) {
   return useQuery({

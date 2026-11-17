@@ -51,7 +51,7 @@ export function Tracker({ reads, onSetChapters, versionId, attribution, highligh
 
   return (
     <div className="space-y-4">
-      <div className="z-20 sm:sticky -mx-4 flex flex-wrap items-center gap-2 border-b bg-background/90 px-4 py-3 backdrop-blur sm:top-16">
+      <div className="z-20 sm:sticky -mx-4 flex flex-wrap items-center gap-2 border-b bg-background/90 px-4 py-3 backdrop-blur sm:top-[calc(4rem+env(safe-area-inset-top))]">
         <Segmented<Filter>
           label={t('tracker.filter')}
           value={filter}

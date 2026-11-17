@@ -24,7 +24,7 @@ export function AppLayout() {
       >
         {t('common.skipToContent')}
       </a>
-      <header className="sticky top-0 z-30 border-b bg-background/85 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16">
           <Link to="/" aria-label={t('nav.today')}>
             <Logo />

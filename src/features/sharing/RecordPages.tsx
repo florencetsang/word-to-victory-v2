@@ -83,7 +83,7 @@ export function PublicRecordPage() {
   const rec = usePublicRecord(token)
   return (
     <div className="min-h-dvh">
-      <header className="border-b bg-card/80">
+      <header className="border-b bg-card/80 pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
           <Logo />
           <div className="flex items-center gap-2">
