@@ -82,7 +82,8 @@ The app needs a public web address for invite links, share links and links that 
 **Google Play Console ($25 once)**
 
 1. Sign up at [play.google.com/console/signup](https://play.google.com/console/signup). Choose a **personal** or **organization** account, pay, and complete identity verification.
-2. **Important for personal accounts:** new personal accounts must run a **closed test with at least 12 testers who stay opted in for 14 days in a row** before they can publish to everyone. Recruit your friends for this early. See [step 9](#9-build-for-android-and-test-with-friends-on-google-play).
+2. **Verify a physical Android device.** Play Console asks you to install the **Google Play Console** app on a real phone running **Android 10 or newer** and sign in with your developer account. Older phones (for example, a Galaxy Note 8 on Android 9) and emulators are rejected. If you don't have a newer phone, borrow one for a few minutes, complete the check, then sign out and remove your account from it. You only need to do this once.
+3. **Important for personal accounts:** new personal accounts must run a **closed test with at least 12 testers who stay opted in for 14 days in a row** before they can publish to everyone. Recruit your friends for this early. See [step 9](#9-build-for-android-and-test-with-friends-on-google-play).
 
 ## 3. Register the app with Apple
 
