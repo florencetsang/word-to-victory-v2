@@ -1,0 +1,85 @@
+# Cloud builds for the iOS and Android apps. No Mac needed: Codemagic builds iOS on its own Macs.
+# Setup is described step by step in docs/mobile-launch.md.
+#
+# Codemagic environment variable groups this file expects (Codemagic > Team settings > Global variables):
+#   word_to_victory  VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, VITE_AUTH_PROVIDERS,
+#                    VITE_PUBLIC_SITE_URL, VITE_GOOGLE_WEB_CLIENT_ID, VITE_GOOGLE_IOS_CLIENT_ID
+#   ios_signing      CERTIFICATE_PRIVATE_KEY, APP_STORE_APPLE_ID
+#   google_play      GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+
+definitions:
+  scripts:
+    - &install
+      name: Install dependencies
+      script: npm ci
+    - &build_web
+      name: Build the web app and copy it into the native projects
+      script: npm run cap:sync
+
+workflows:
+  ios-testflight:
+    name: iOS to TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      # The name you gave the App Store Connect API key in Codemagic > Team settings > Integrations.
+      app_store_connect: Word to Victory
+    environment:
+      groups:
+        - word_to_victory
+        - ios_signing
+      node: 22
+      xcode: latest
+    scripts:
+      - *install
+      - *build_web
+      - name: Set up code signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files com.wordtovictory.app --type IOS_APP_STORE --create
+          keychain add-certificates
+          xcode-project use-profiles
+      - name: Set the build number
+        working_directory: ios/App
+        script: |
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" || echo 0)
+          agvtool new-version -all $((LATEST + 1))
+      - name: Build the .ipa
+        script: xcode-project build-ipa --project ios/App/App.xcodeproj --scheme App
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+
+  android-play-internal:
+    name: Android to Google Play internal testing
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      groups:
+        - word_to_victory
+        - google_play
+      # The reference name of the upload keystore in Codemagic > Team settings > Code signing identities.
+      android_signing:
+        - word_to_victory_upload
+      node: 22
+      java: 21
+    scripts:
+      - *install
+      - *build_web
+      - name: Build the .aab
+        working_directory: android
+        script: |
+          LATEST=$(google-play get-latest-build-number --package-name com.wordtovictory.app || echo 0)
+          ./gradlew bundleRelease -PversionCode=$((LATEST + 1))
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        # Google Play only accepts draft releases until the store listing is complete.
+        # Change to false once the app has passed its first review.
+        submit_as_draft: true

@@ -6,6 +6,7 @@ import { Logo } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, Input, Label } from '@/components/ui/primitives'
 import { LanguageSwitcher } from '@/features/settings/LanguageSwitcher'
+import { authRedirectUrl, isNative, nativePlatform } from '@/lib/platform'
 import { enabledOAuthProviders, supabase } from '@/lib/supabase'
 import { errorMessage } from '@/lib/utils'
 import { useAuth } from './auth'
@@ -77,7 +78,11 @@ export function LoginPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const redirectTo = `${window.location.origin}${redirect}`
+  const redirectTo = authRedirectUrl(redirect)
+  // Sign in with Apple has no native sheet on Android; those users can use Google or email.
+  const providers = enabledOAuthProviders.filter(
+    (p: 'google' | 'apple') => !(p === 'apple' && nativePlatform() === 'android'),
+  )
 
   const sendLink = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,13 +104,24 @@ export function LoginPage() {
   }
 
   const oauth = async (provider: 'google' | 'apple') => {
+    setError(null)
+    if (isNative()) {
+      // The stores reject web sign-in inside the app, so use the system Google/Apple sheet.
+      const { nativeSignIn, isCancelled } = await import('./nativeAuth')
+      try {
+        await nativeSignIn(provider)
+      } catch (err) {
+        if (!isCancelled(err)) setError(errorMessage(err))
+      }
+      return
+    }
     const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo } })
     if (error) setError(errorMessage(error))
   }
 
   return (
-    <div className="relative grid min-h-dvh lg:grid-cols-2">
-      <div className="absolute right-4 top-4">
+    <div className="relative grid min-h-dvh pt-[env(safe-area-inset-top)] lg:grid-cols-2">
+      <div className="absolute right-4 top-[calc(1rem+env(safe-area-inset-top))]">
         <LanguageSwitcher />
       </div>
       <aside className="hidden flex-col justify-between bg-primary p-12 text-primary-foreground lg:flex">
@@ -181,19 +197,19 @@ export function LoginPage() {
                   </Button>
                 </form>
               )}
-              {enabledOAuthProviders.length > 0 && !sent && (
+              {providers.length > 0 && !sent && (
                 <>
                   <div className="flex items-center gap-3 text-xs uppercase text-muted-foreground">
                     <span className="h-px flex-1 bg-border" />
                     {t('login.or')}
                     <span className="h-px flex-1 bg-border" />
                   </div>
-                  {enabledOAuthProviders.includes('google') && (
+                  {providers.includes('google') && (
                     <Button variant="outline" className="w-full" onClick={() => oauth('google')}>
                       <GoogleIcon /> {t('login.google')}
                     </Button>
                   )}
-                  {enabledOAuthProviders.includes('apple') && (
+                  {providers.includes('apple') && (
                     <Button variant="outline" className="w-full" onClick={() => oauth('apple')}>
                       <AppleIcon /> {t('login.apple')}
                     </Button>

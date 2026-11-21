@@ -15,15 +15,16 @@ Track your Bible reading chapter by chapter, alone or together. This is a ground
 
 ## Stack
 
-| Layer    | Choice                                                                           |
-| -------- | -------------------------------------------------------------------------------- |
-| Frontend | Vite, React 19, TypeScript, Tailwind CSS v4, Radix primitives (shadcn-style)     |
-| Data     | TanStack Query (optimistic mutations) and TanStack Router                        |
-| Backend  | Supabase: Postgres, Auth, Row-Level Security, RPC functions, Realtime            |
-| Hosting  | Vercel (static SPA) and Supabase Cloud                                           |
-| Quality  | Vitest, pgTAP (database), Playwright (e2e, desktop and mobile), oxlint, Prettier |
+| Layer    | Choice                                                                            |
+| -------- | --------------------------------------------------------------------------------- |
+| Frontend | Vite, React 19, TypeScript, Tailwind CSS v4, Radix primitives (shadcn-style)      |
+| Data     | TanStack Query (optimistic mutations) and TanStack Router                         |
+| Backend  | Supabase: Postgres, Auth, Row-Level Security, RPC functions, Realtime             |
+| Hosting  | Vercel (static SPA) and Supabase Cloud                                            |
+| Mobile   | Capacitor (iOS and Android apps built from the same code), Codemagic cloud builds |
+| Quality  | Vitest, pgTAP (database), Playwright (e2e, desktop and mobile), oxlint, Prettier  |
 
-See [docs/architecture.md](docs/architecture.md) for the data model and security design.
+See [docs/architecture.md](docs/architecture.md) for the data model and security design. To publish the iOS and Android apps, follow [docs/mobile-launch.md](docs/mobile-launch.md).
 
 ## Local development
 
@@ -40,16 +41,19 @@ Magic-link emails are captured by Mailpit at http://127.0.0.1:54324.
 
 ### Scripts
 
-| Script                                  | Purpose                                                       |
-| --------------------------------------- | ------------------------------------------------------------- |
-| `npm run dev` / `build` / `preview`     | Vite dev server, production build, and a preview of the build |
-| `npm test`                              | Unit tests (domain logic and translation coverage)            |
-| `npm run e2e`                           | Playwright tests (needs `db:start`; starts the dev server)    |
-| `npm run db:test`                       | pgTAP tests for the schema, RLS and RPCs                      |
-| `npm run db:reset`                      | Re-apply migrations to the local database                     |
-| `npm run db:types`                      | Regenerate `src/lib/database.types.ts`                        |
-| `npm run typecheck` / `lint` / `format` | Static checks                                                 |
-| `npm run pwa-assets`                    | Regenerate the PWA icons from `public/favicon.svg`            |
+| Script                                  | Purpose                                                               |
+| --------------------------------------- | --------------------------------------------------------------------- |
+| `npm run dev` / `build` / `preview`     | Vite dev server, production build, and a preview of the build         |
+| `npm test`                              | Unit tests (domain logic and translation coverage)                    |
+| `npm run e2e`                           | Playwright tests (needs `db:start`; starts the dev server)            |
+| `npm run db:test`                       | pgTAP tests for the schema, RLS and RPCs                              |
+| `npm run db:reset`                      | Re-apply migrations to the local database                             |
+| `npm run db:types`                      | Regenerate `src/lib/database.types.ts`                                |
+| `npm run typecheck` / `lint` / `format` | Static checks                                                         |
+| `npm run pwa-assets`                    | Regenerate the PWA icons from `public/favicon.svg`                    |
+| `npm run cap:sync`                      | Build the web app and copy it into the `ios/` and `android/` projects |
+| `npm run cap:android`                   | `cap:sync`, then open Android Studio (emulator)                       |
+| `npm run cap:assets`                    | Regenerate native app icons and splash screens from `assets/`         |
 
 ## Deployment
 
@@ -81,6 +85,10 @@ Import the repository into Vercel; `vercel.json` already configures the Vite bui
 
 These values are compiled in at build time, so redeploy after changing them.
 
+### 3. iOS and Android apps
+
+See [docs/mobile-launch.md](docs/mobile-launch.md) for the step-by-step guide: domain, developer accounts, native sign-in, Codemagic cloud builds, TestFlight and Google Play testing, store listings and review.
+
 ## Project layout
 
 ```
@@ -89,10 +97,13 @@ src/
   components/   UI primitives and shared components
   domain/       pure, tested logic: books, plans, streaks, dates, legacy import
   features/     auth, tracker, today, stats, plans, groups, sharing, settings
-  lib/          Supabase client, i18n, generated DB types
+  lib/          Supabase client, i18n, generated DB types, native-app helpers
   locales/      en and zh-Hant translations
 supabase/
   migrations/   schema, RLS policies and RPCs
   tests/        pgTAP tests
 e2e/            Playwright tests (magic-link login through Mailpit)
+ios/, android/  Capacitor native projects (see docs/mobile-launch.md)
+assets/         Source images for the native icons and splash screens
+scripts/        configure-mobile.mjs writes production values into the native projects
 ```

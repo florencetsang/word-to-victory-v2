@@ -6,6 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:native": "tsc -b && vite build --mode native",
+    "cap:sync": "npm run build:native && cap sync",
+    "cap:android": "npm run cap:sync && cap open android",
+    "cap:assets": "capacitor-assets generate --ios --android --iconBackgroundColor \"#faf6ee\" --splashBackgroundColor \"#faf6ee\" --iconBackgroundColorDark \"#14152b\" --splashBackgroundColorDark \"#14152b\"",
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
@@ -22,6 +26,13 @@
     "pwa-assets": "pwa-assets-generator"
   },
   "dependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/ios": "^8.6.2",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4",
+    "@capgo/capacitor-social-login": "^8.7.11",
     "@fontsource-variable/fraunces": "^5.3.0",
     "@fontsource-variable/inter": "^5.3.0",
     "@supabase/supabase-js": "^2.119.0",
@@ -41,6 +52,8 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.6.2",
     "@playwright/test": "^1.65.1",
     "@tailwindcss/vite": "^4.3.5",
     "@testing-library/jest-dom": "^7.0.1",

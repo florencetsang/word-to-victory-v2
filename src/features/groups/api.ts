@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useUserId } from '@/features/auth/auth'
+import { publicOrigin } from '@/lib/platform'
 import { supabase, type GroupMode } from '@/lib/supabase'
 import { errorMessage } from '@/lib/utils'
 
@@ -118,4 +119,4 @@ export function useGroupPreview(code: string) {
   })
 }
 
-export const inviteUrl = (code: string) => `${window.location.origin}/join/${code}`
+export const inviteUrl = (code: string) => `${publicOrigin()}/join/${code}`

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Word to Victory</string>
+    <string name="title_activity_main">Word to Victory</string>
+    <string name="package_name">com.wordtovictory.app</string>
+    <string name="custom_url_scheme">com.wordtovictory.app</string>
+</resources>

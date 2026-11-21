@@ -5,3 +5,5 @@ src/lib/database.types.ts
 playwright-report
 test-results
 package-lock.json
+ios
+android
